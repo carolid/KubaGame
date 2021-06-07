@@ -1,8 +1,3 @@
-# Author: Caroline Davis
-# Date: 05/28/2021
-# Description: ...
-
-
 class KubaGame:
     def __init__(self , player1_tuple , player2_tuple):
         self._current_turn = None
@@ -11,6 +6,7 @@ class KubaGame:
         self._player1 = Player(player1_tuple)
         self._player2 = Player(player2_tuple)
         self._marbles = Marbles()
+        self._marbles_linked_list = MarblesLinked
         self._player_list = [self._player1 , self._player2]
 
     def get_current_turn(self):
@@ -29,6 +25,7 @@ class KubaGame:
 
         if self._current_turn is None:
             self._current_turn = player_requesting_name
+            self.initialize_board()
         elif self._current_turn != playername:
             return False
 
@@ -76,6 +73,16 @@ class KubaGame:
             elif row_coordinate - 1 < 0 or current_board[row_coordinate - 1][column_coordinate] == "X":
                 return self._game_board.move_marble(player, coordinates , direction)
             return False
+
+    def initialize_board(self):
+        current_board = self._game_board.get_current_game_board()
+        for row in range(0, len(current_board)):
+            marbles_linked = self._marbles_linked_list(row)
+            for column in range(0, len(current_board[row])):
+                color = current_board[row][column]
+                marbles_linked.add(color, row)
+            current_board.add_linked_row(marbles_linked, row)
+        print(self._game_board.get_linked_rows())
 
     def get_winner(self):
         return self._winner
@@ -125,13 +132,13 @@ class Board:
                                   ['B' , 'B' , 'X' , 'R' , 'X' , 'W' , 'W'] ,
                                   ['B' , 'B' , 'X' , 'X' , 'X' , 'W' , 'W']
                                   ]
-        self._current_game_board = [['W' , 'W' , 'X' , 'X' , 'X' , 'B' , 'B'] ,
-                                    ['W' , 'W' , 'X' , 'R' , 'X' , 'B' , 'B'] ,
-                                    ['X' , 'X' , 'R' , 'R' , 'R' , 'X' , 'X'] ,
-                                    ['X' , 'R' , 'R' , 'R' , 'R' , 'R' , 'X'] ,
-                                    ['X' , 'X' , 'R' , 'R' , 'R' , 'X' , 'X'] ,
-                                    ['B' , 'B' , 'X' , 'R' , 'X' , 'W' , 'W'] ,
-                                    ['B' , 'B' , 'X' , 'X' , 'X' , 'W' , 'W']
+        self._current_game_board = [['W' , 'W' , 'X' , 'X' , 'X' , 'B' , 'B', "None"] ,
+                                    ['W' , 'W' , 'X' , 'R' , 'X' , 'B' , 'B', "None"] ,
+                                    ['X' , 'X' , 'R' , 'R' , 'R' , 'X' , 'X', "None"] ,
+                                    ['X' , 'R' , 'R' , 'R' , 'R' , 'R' , 'X', "None"] ,
+                                    ['X' , 'X' , 'R' , 'R' , 'R' , 'X' , 'X', "None"] ,
+                                    ['B' , 'B' , 'X' , 'R' , 'X' , 'W' , 'W', "None"] ,
+                                    ['B' , 'B' , 'X' , 'X' , 'X' , 'W' , 'W', "None"]
                                     ]
         self._previous_game_board = [['W' , 'W' , 'X' , 'X' , 'X' , 'B' , 'B'] ,
                                      ['W' , 'W' , 'X' , 'R' , 'X' , 'B' , 'B'] ,
@@ -141,6 +148,13 @@ class Board:
                                      ['B' , 'B' , 'X' , 'R' , 'X' , 'W' , 'W'] ,
                                      ['B' , 'B' , 'X' , 'X' , 'X' , 'W' , 'W']
                                      ]
+        self._rows_linked_list = [[] , [] , [] , [] , [] , [] , []]
+
+    def add_linked_row(self, linked_list, row):
+        self._rows_linked_list[row] = linked_list
+
+    def get_linked_rows(self):
+        return self._rows_linked_list
 
     def get_start_game_board(self):
         return self._start_game_board
@@ -188,6 +202,62 @@ class Board:
 
         elif direction == "B":
 
+class MarbleNode:
+    def __init__(self, color):
+        self._color = color
+        self._next = None
+        self._row = None
+        self._column = None
+
+    def set_marble_color(self , color):
+        """Function to set the data value of the Node object"""
+        self._color = color
+
+    def set_marble_next(self , node):
+        """Function to set the next node of the current Node object"""
+        self._next = node
+
+    def set_marble_row(self, row):
+        self._row = row
+
+    def set_marble_column(self, column):
+        self._column = column
+
+    def get_marble_color(self):
+        """Function to get the data value of the Node object"""
+        return self._color
+
+    def get_marble_next(self):
+        """Function to get the next value of the Node object"""
+        return self._next
+
+    def get_marble_row(self):
+        return self._row
+
+    def get_marble_column(self):
+        return self._column
+
+
+
+class MarblesLinked:
+    def __init__(self, row):
+        """Function that initializes the data member of the linked list - the head (first Node) of the list"""
+        self._head = None
+        self._row = row
+
+    def add(self, color, row):
+        """
+        Adds a node containing val to the linked list
+        """
+        self._row = row
+
+        if self._head is None:
+            self._head = MarbleNode(color)
+        else:
+            current = self._head
+            while current.next is not None:
+                current = current.next
+            current.next = MarbleNode(color)
 
 class Marbles:
     def __init__(self):
@@ -214,20 +284,3 @@ class Marbles:
             self._black_marbles -= 1
         elif color == "W":
             self._white_marbles -= 1
-
-
-# ---------------------------------------- Tests ------------------------------------- #
-# FROM CANVAS:
-# game = KubaGame(('PlayerA', 'W'), ('PlayerB', 'B'))
-# game.get_marble_count() #returns (8,8,13)
-# game.get_captured('PlayerA') #returns 0
-# game.get_current_turn() #returns 'PlayerB' because PlayerA has just played.
-# game.get_winner() #returns None
-# game.make_move('PlayerA', (6,5), 'F')
-# game.make_move('PlayerA', (6,5), 'L') #Cannot make this move
-# game.get_marble((5,5)) #returns 'W'
-
-
-# CAROLINE'S TESTS:
-game = KubaGame(("Randy" , "W") , ("John" , "B"))
-print(game.get_marble((0 , 2)))
