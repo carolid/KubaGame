@@ -14,65 +14,118 @@ class KubaGame:
         return self._current_turn
 
     def make_move(self , playername , coordinates , direction):
-        player_requesting = None
         row_coordinate = coordinates[0]
         column_coordinate = coordinates[1]
-        current_board = self._game_board.get_current_game_board()
+        marble_mover = self._marbles_linked_list.get_node_by_pos(row_coordinate, column_coordinate)
+        current = marble_mover
+        previous = None
+        is_valid_move = None
 
-        for player in self._player_list:
-            if playername == player.get_name():
-                player_requesting = player
-        player_requesting_name = player_requesting.get_name()
-
-        if self._current_turn is None:
-            self._current_turn = player_requesting_name
-            self.initialize_board()
-        elif self._current_turn != playername:
+        if playername == self._player1.get_name():
+            current_player = self._player1
+        elif playername != self._player2.get_name():
+            current_player = self._player2
+        else:
+            print("Player name incorrect or not found.")
             return False
 
-        current_player = player_requesting
+        is_valid_turn = self.is_valid_turn(current_player, marble_mover, row_coordinate, column_coordinate)
+
+        if is_valid_turn:
+            if direction == "L":
+                is_valid_move = self.is_valid_left_move(marble_mover , current , previous)
+            elif direction == "R":
+                is_valid_move = self.is_valid_right_move(marble_mover , current , previous)
+            elif direction == "F":
+                is_valid_move = self.is_valid_forward_move(marble_mover , current , previous)
+            elif direction == "B":
+                is_valid_move = self.is_valid_backward_move(marble_mover , current , previous)
+
+            if is_valid_move:
+                return self._marbles_linked_list.move_marble(current_player , row_coordinate, column_coordinate , direction)
+            return False
+        return False
+
+    def is_valid_turn(self, current_player, marble_mover, row_coordinate, column_coordinate):
+        if self._current_turn is None:
+            self._current_turn = current_player.get_name()
+            self.initialize_board()
+        elif self._current_turn != current_player.get_name():
+            return False
+
+        marble_color = marble_mover.get_marble_color()
 
         if 0 <= row_coordinate <= 6:
             if 0 <= column_coordinate <= 6:
-                if current_player.get_color() == current_board[row_coordinate][column_coordinate]:
+                if current_player.get_color() == marble_color:
                     if self._winner is None:
-                        return self.is_valid_move(current_player , coordinates , direction)
+                        return True
                     return False
                 return False
             return False
         return False
 
-    def is_valid_move(self , player , coordinates , direction):
-        row_coordinate = coordinates[0]
-        column_coordinate = coordinates[1]
-        current_board = self._game_board.get_current_game_board()
-        marbles_linked = self._marbles_linked_list
-        marble_mover = marbles_linked.get_node_by_pos(row_coordinate, column_coordinate)
+    def is_valid_left_move(self , marble_mover , current , previous):
+        if marble_mover.get_previous_marble() is None or \
+                marble_mover.get_next_marble() != "X" or \
+                marble_mover.get_next_marble() is not None:
+            return False
+        while current != "X" or None:
+            previous = current
+            current = current.get_previous_marble()
+        if current is None:
+            if previous.get_marble_color() == marble_mover:
+                return False
+            return True
+        return True
 
-        if direction == "L":
-            if marble_mover.get_previous() is None:
-                return False
-            elif marble_mover.get_next() == "X" or marble_mover.get_next() is None:
-                return self._game_board.move_marble(player , coordinates , direction)
+    def is_valid_right_move(self , marble_mover , current , previous):
+        if marble_mover.get_next_marble() is None or \
+                marble_mover.get_previous_marble() != "X" or \
+                marble_mover.get_previous_marble() is not None:
             return False
-        elif direction == "R":
-            if marble_mover.get_next() is None:
+        while current != "X" or None:
+            previous = current
+            current = current.get_next_marble()
+        if current is None:
+            if previous.get_marble_color() == marble_mover:
                 return False
-            elif marble_mover.get_previous() == "X" or marble_mover.get_previous() is None:
-                return self._game_board.move_marble(player , coordinates , direction)
+            return True
+        return True
+
+    def is_valid_forward_move(self , marble_mover , current , previous):
+        if marble_mover.get_marble_above() is None or \
+                marble_mover.get_below_marble() != "X" or \
+                marble_mover.get_below_marble() is not None:
             return False
-        elif direction == "F":
-            if marble_mover.get_above() is None:
+        while current != "X" or None:
+            previous = current
+            current = current.get_marble_above()
+        if current is None:
+            if previous.get_marble_color() == marble_mover:
                 return False
-            elif marble_mover.get_below() == "X" or marble_mover.get_below() is None:
-                return self._game_board.move_marble(player , coordinates , direction)
+            return True
+        return True
+
+    def is_valid_backward_move(self , marble_mover , current , previous):
+        if marble_mover.get_below_marble() is None or \
+                marble_mover.get_marble_above() != "X" or \
+                marble_mover.get_marble_above() is not None:
             return False
-        elif direction == "B":
-            if marble_mover.get_below() is None:
+        while current != "X" or None:
+            previous = current
+            current = current.get_marble_below()
+        if current is None:
+            if previous.get_marble_color() == marble_mover:
                 return False
-            elif marble_mover.get_above() == "X" or marble_mover.get_above is None:
-                return self._game_board.move_marble(player , coordinates , direction)
-            return False
+            return True
+        return True
+
+    def evaluate_for_capture(self):
+
+    def evaluate_for_win(self):
+
+
 
     def initialize_board(self):
         current_board = self._game_board.get_current_game_board()
@@ -83,22 +136,23 @@ class KubaGame:
                 color = current_board[row][column]
                 marbles_linked.add(color , row , column)
             self._game_board.add_linked_row(marbles_linked)
-            self._marbles_linked_list.set_above_below()
+            self._marbles_linked_list.set_above_below_previous()
 
     def get_winner(self):
         return self._winner
 
-    def get_captured(self , playername):
-        for player in self._player_list:
-            if player.get_name() == playername:
-                return player.get_captures()
-        return 0
+    def get_captured(self , playername , captures=None):
+        if self._player1.get_name() == playername:
+            captures = self._player1.get_captures()
+        elif self._player2.get_name() == playername:
+            captures = self._player2.get_captures()
+        return captures
 
     def get_marble(self , coordinates):
         row_coordinate = coordinates[0]
         column_coordinate = coordinates[1]
-        current_board = self._game_board.get_current_game_board()
-        return current_board[row_coordinate][column_coordinate]
+        node = self._marbles_linked_list.get_node_by_pos(row_coordinate, column_coordinate)
+        return node.get_marble_color()
 
     def get_marble_count(self):
         return self._marbles_count.total_marbles()
@@ -156,44 +210,6 @@ class Board:
     def get_previous_game_board(self):
         return self._previous_game_board
 
-    def move_marble(self , player , coordinates , direction):
-        pass
-        # row_coordinate = coordinates[0]
-        # column_coordinate = coordinates[1]
-        # current_board = self._current_game_board
-        # previous_board = self._previous_game_board
-        # current = current_board[row_coordinate][column_coordinate]
-        # previous = None
-        # playername = player.get_name()
-        #
-        # if direction == "L":
-        #     start = column_coordinate
-        #     next = current_board[row_coordinate][column_coordinate + 1]
-        #
-        #     while self._current_game_board[row_coordinate][column_coordinate] != "X" or column_coordinate < 6:
-        #         previous = current
-        #         current = next
-        #         next = current_board[row_coordinate][column_coordinate + 1]
-        #         next = playername
-        #         column_coordinate += 1
-        #
-        #     current_board[row_coordinate][start] = "X"
-        #
-        #     if column_coordinate == 6:
-        #         knock_off = current
-        #         current = previous
-        #
-        #
-        #
-        #
-        #
-        #
-        # elif direction == "R":
-        #
-        # elif direction == "F":
-        #
-        # elif direction == "B":
-
 
 class MarbleNode:
     def __init__(self , color , row , column):
@@ -213,13 +229,13 @@ class MarbleNode:
         """Function to set the next node of the current Node object"""
         self._next = marble
 
-    def set_marble_above(self, marble):
+    def set_marble_above(self , marble):
         self._above = marble
 
-    def set_marble_below(self, marble):
+    def set_marble_below(self , marble):
         self._below = marble
 
-    def set_previous_marble(self, marble):
+    def set_previous_marble(self , marble):
         self._previous = marble
 
     def set_marble_row(self , row):
@@ -261,10 +277,18 @@ class MarblesLinked:
         self._game_board = Board()
         self._nodes_list = []
 
+    def set_head(self , node):
+        """Function that sets the head of the linked list to a Node containing the value specified"""
+        self._head = node
+
+    def get_head(self):
+        """Function that returns the Node object at the head of the linked list"""
+        return self._head
+
     def add_node_to_list(self , node):
         self._nodes_list.append(node)
 
-    def get_node_by_pos(self , row, column):
+    def get_node_by_pos(self , row , column):
         for node in self._nodes_list:
             if node.get_row() == row:
                 if node.get_column() == column:
@@ -276,7 +300,7 @@ class MarblesLinked:
         Adds a node containing val to the linked list
         """
         self._row = row
-        self._node = MarbleNode(color, row, column)
+        self._node = MarbleNode(color , row , column)
 
         if self._head is None:
             self._head = self._node
@@ -290,22 +314,30 @@ class MarblesLinked:
 
         self.add_node_to_list(self._node)
 
-    def set_above_below(self):
+    def set_above_below_previous(self):
         above = None
         below = None
+        previous = None
 
         for column in range(7):
-            current = self._node.get_node_by_pos(0, column)
+            current = self._node.get_node_by_pos(0 , column)
             for row in range(7):
                 if 1 < row < 5:
-                    below = self._node.get_node_by_pos(row + 1 , column)
-                    above = self._node.get_node_by_pos(row - 1 , column)
+                    below = self.get_node_by_pos(row + 1 , column)
+                    above = self.get_node_by_pos(row - 1 , column)
                 elif row == 0:
                     above = None
                 elif row == 6:
                     below = None
+
+                if column >= 1:
+                    previous = self.get_node_by_pos(row, column - 1)
+                elif column == 0:
+                    previous = None
+
                 current._above = above
                 current._below = below
+                current._previous = previous
                 current = current.get_marble_below()
 
     def display(self):
@@ -316,6 +348,96 @@ class MarblesLinked:
         while current is not None:
             print(current.get_marble_color() , end=" ")
             current = current._next
+
+    def move_marble(self , player , marble_mover, row_coordinate, column_coordinate , direction):
+            """
+            Inserts a node containing val into the linked list at position pos
+            """
+            current = marble_mover
+            start = current
+            stored = None
+            captured = None
+
+            if direction == "L":
+                current = current._next
+                if current is None:
+
+                current._previous = current
+
+
+                previous = current.get_previous_marble()
+                temp = current._next
+
+                while current is not None or current != "X":
+                    following = current._previous
+                    current._previous = previous
+                    previous = current
+                    current = following
+
+                    stored = current
+                    current = current._previous
+                if current is None:
+                    captured = stored
+                    start = start._next
+
+
+
+
+                    if temp.get_marble_column() == 6:
+
+
+
+                    temp = current
+                    current = marble_mover
+                    current.next = marble_mover.get_next_marble()
+
+
+
+                current = marble_mover
+                for _ in range(pos - 1):
+                    if current.next is None:
+                        current.next = Node(val)
+                        return
+                    current = current.next
+                temp = current.next
+                current.next = Node(val)
+                current.next.next = temp
+
+                temp = current
+                while current != "X" or None:
+                    previous = current
+                    current = current.get_previous_marble()
+                if current is None:
+
+
+                    if previous.get_marble_color() == marble_mover:
+                        return False
+                    return True
+                return True
+
+            elif direction == "R":
+
+            elif direction == "F":
+
+            elif direction == "B":
+
+
+
+            if pos == 0:
+                temp = self._head
+                self._head = Node(val)
+                self._head.next = temp
+            else:
+                current = self._head
+                counter = 0
+                for _ in range(pos - 1):
+                    if current.next is None:
+                        current.next = Node(val)
+                        return
+                    current = current.next
+                temp = current.next
+                current.next = Node(val)
+                current.next.next = temp
 
 
 class Marbles:
