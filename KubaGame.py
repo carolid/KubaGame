@@ -51,15 +51,15 @@ class KubaGame:
                 if 0 <= column_coordinate <= 6:
                     if current_player.get_color() == marble_color:
                         if self._winner is None:
-                            return self.is_valid_move(marble_mover, current_player, row_coordinate,
-                                                      column_coordinate, direction)
+                            return self.is_valid_move(marble_mover , current_player , row_coordinate ,
+                                                      column_coordinate , direction)
                         return False
                     return False
                 return False
             return False
         return False
 
-    def is_valid_move(self , marble_mover , current_player, row_coordinate, column_coordinate, direction):
+    def is_valid_move(self , marble_mover , current_player , row_coordinate , column_coordinate , direction):
         is_valid = False
         color = marble_mover.get_marble_color()
         is_pushed_off = None
@@ -67,7 +67,7 @@ class KubaGame:
         if direction == "L":
             if marble_mover.get_previous_marble() is not None:
                 if marble_mover.get_next_marble() == "X" or marble_mover.get_next_marble() is None:
-                        is_valid = True
+                    is_valid = True
 
         elif direction == "R":
             if marble_mover.get_next_marble() is not None:
@@ -85,7 +85,7 @@ class KubaGame:
                     is_valid = True
 
         if is_valid:
-            self._game_board.move_marble(current_player, row_coordinate, column_coordinate, direction)
+            self._game_board.move_marble(current_player , row_coordinate , column_coordinate , direction)
             self.evaluate_win(current_player)
             return True
         return False
@@ -128,7 +128,7 @@ class Player:
     def get_opposite_captures(self):
         return self._player_opposite_captures
 
-    def add_capture(self, color):
+    def add_capture(self , color):
         if color == "B" or "W":
             self._player_opposite_captures += 1
         elif color == "R":
@@ -165,7 +165,7 @@ class Board:
     def get_previous_game_board(self):
         return self._previous_game_board
 
-    def move_marble(self, player, row_coordinate, column_coordinate, direction):
+    def move_marble(self , player , row_coordinate , column_coordinate , direction):
         self._previous_game_board = self._current_game_board
         color = player.get_color()
         opposite_color = None
@@ -188,12 +188,13 @@ class Board:
             if column_coordinate == 0:
                 captured = self._current_game_board[row_coordinate][0]
                 self._current_game_board[row_coordinate][count:start_column] = self._current_game_board \
-                    [row_coordinate][count+1:]
+                                                                                   [row_coordinate][count + 1:]
                 self._current_game_board[row_coordinate].pop(0)
 
             elif self._current_game_board[row_coordinate][column_coordinate] == "X":
-                self._current_game_board[row_coordinate][next_column:count+1] = self._current_game_board \
-                    [row_coordinate][start_column:count]
+                self._current_game_board[row_coordinate][next_column:count + 1] = self._current_game_board \
+                                                                                      [row_coordinate][
+                                                                                  start_column:count]
 
             self._current_game_board[row_coordinate][start_column] = "X"
 
@@ -209,12 +210,13 @@ class Board:
             if column_coordinate == 6:
                 captured = self._current_game_board[row_coordinate][6]
                 self._current_game_board[row_coordinate][next_column:] = self._current_game_board \
-                [row_coordinate][start_column:count]
+                                                                             [row_coordinate][start_column:count]
                 self._current_game_board[row_coordinate].pop(6)
 
             elif self._current_game_board[row_coordinate][column_coordinate] == "X":
                 self._current_game_board[row_coordinate][next_column:count + 1] = self._current_game_board \
-                    [row_coordinate][start_column:count]
+                                                                                      [row_coordinate][
+                                                                                  start_column:count]
 
             self._current_game_board[row_coordinate][start_column] = "X"
 
@@ -282,7 +284,6 @@ class Board:
             player.add_capture(captured)
 
 
-
 class Marbles:
     def __init__(self):
         self._white_marbles = 8
@@ -300,6 +301,7 @@ class Marbles:
             self._black_marbles -= 1
         elif color == "W":
             self._white_marbles -= 1
+
 
 class MarbleNode:
     def __init__(self , color , row , column):
@@ -414,7 +416,7 @@ class MarblesLinked(Board):
 
         for column in range(7):
             for row in range(7):
-                current = self.get_node_by_pos(column, row)
+                current = self.get_node_by_pos(column , row)
                 print(current)
                 print(column)
                 print(row)
@@ -446,17 +448,17 @@ class MarblesLinked(Board):
 
 
 # ---------------------------------------- Tests ------------------------------------- #
-# FROM CANVAS:
-game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
-print(game.get_marble_count())  # returns (8,8,13)
-print(game.get_captured('PlayerA'))  # returns 0
-print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
-print(game.get_winner())  # returns None
-print(game.make_move('PlayerA' , (6 , 5) , 'F'))
-print(game.make_move('PlayerA', (6,5), 'L')) #Cannot make this move
-print(game.get_marble((5,5))) #returns 'W'
-print(game._game_board.display_linked_row(1))
-
-# CAROLINE'S TESTS:
-# game = KubaGame(("Randy" , "W") , ("John" , "B"))
-# print(game.get_marble((0 , 2)))
+# # FROM CANVAS:
+# game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
+# print(game.get_marble_count())  # returns (8,8,13)
+# print(game.get_captured('PlayerA'))  # returns 0
+# print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
+# print(game.get_winner())  # returns None
+# print(game.make_move('PlayerA' , (6 , 5) , 'F'))
+# print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
+# print(game.get_marble((5 , 5)))  # returns 'W'
+# print(game._game_board.display_linked_row(1))
+#
+# # CAROLINE'S TESTS:
+# # game = KubaGame(("Randy" , "W") , ("John" , "B"))
+# # print(game.get_marble((0 , 2)))
