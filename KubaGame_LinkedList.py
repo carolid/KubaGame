@@ -197,6 +197,7 @@ class Board:
         self._current_game_board = self._start_game_board
         self._previous_game_board = self._current_game_board
         self._rows_linked_list = []
+        self._marbles = Marbles()
 
     def add_linked_row(self , linked_list):
         self._rows_linked_list.append(linked_list)
@@ -218,7 +219,31 @@ class Board:
         return self._previous_game_board
 
     def move_marble_right(self, player , row_coordinate, column_coordinate):
-        pass
+        color = player.get_color()
+        current_board = self._current_game_board
+        current_spot = current_board[row_coordinate][column_coordinate]
+        next_column = column_coordinate + 1
+        start_column = column_coordinate
+        count = start_column
+        while column_coordinate != 6 and current_board[row_coordinate][column_coordinate] != "X":
+            count += 1
+            current_spot = current_board[row_coordinate][column_coordinate]
+            column_coordinate += 1
+        if current_spot == "X":
+            current_board[row_coordinate][next_column:count+1] = current_board[row_coordinate][start_column:count]
+            current_board[row_coordinate][start_column] = "X"
+        elif column_coordinate == 6:
+            if current_board[row_coordinate][6] == "R":
+                player.add_capture()
+                self._marbles.remove_marble("R")
+            elif current_board[row_coordinate][6] == color:
+                return False
+            elif current_board[row_coordinate][6] == "W":
+                self._marbles.remove_marble("W")
+
+            current_board[row_coordinate].pop(6)
+
+
 
     def move_marble_left (self , player , row_coordinate, column_coordinate):
         pass
@@ -371,51 +396,6 @@ class MarblesLinked:
         while current is not None:
             print(current.get_marble_color() , end=" ")
             current = current._next
-
-    def move_marble(self , player , marble_mover, row_coordinate, column_coordinate , direction):
-            """
-            Inserts a node containing val into the linked list at position pos
-            """
-            current = marble_mover
-            start = current
-            temp = current._next
-            stored = None
-            captured = None
-            linked_row = self.get_linked_row(row_coordinate)
-
-
-            if direction == "L":
-
-                if column_coordinate == 1:
-                    temp = linked_row._head()
-                    linked_row._head = marble_mover
-                    self.add_node_to_list(MarbleNode("X", row_coordinate, column_coordinate))
-                    captured = temp
-                else:
-                    while current.get_marble_color() != "X" or current is not None:
-                        temp = current._previous
-                        current._below = current._below._previous
-                        current._above = current._above._previous
-                        current._previous = current
-                        current = temp
-                    if current is None:
-                        captured = stored
-                    elif current.get_marble_color() == "X":
-                        while current.get_marble_color() == "X":
-                            current = current._next
-
-                    if temp is None:
-                        self.add_node_to_list(MarbleNode("X", row_coordinate, column_coordinate))
-                    else:
-                        start = temp
-
-            elif direction == "R":
-
-
-            elif direction == "F":
-
-            elif direction == "B":
-
 
 class Marbles:
     def __init__(self):
