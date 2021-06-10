@@ -33,6 +33,7 @@ class KubaGame:
         row_coordinate = coordinates[0]
         column_coordinate = coordinates[1]
         current_board = self._game_board.get_current_game_board()
+        columns = self._game_board.get_columns()
         current_player = None
         other_player = None
 
@@ -42,6 +43,23 @@ class KubaGame:
             other_player = player
         if self._current_turn is None:
             self._current_turn = current_player.get_name()
+
+        player_color = current_player.get_color()
+
+        if "X" not in current_board[row_coordinate]:
+            if direction == "L":
+                if current_board[row_coordinate][0] == player_color:
+                    return False
+            elif direction == "R":
+                if current_board[row_coordinate][6] == player_color:
+                    return False
+        elif "X" not in columns[column_coordinate]:
+            if direction == "F":
+                if columns[column_coordinate][0] == player_color:
+                    return False
+            elif direction == "B":
+                if columns[column_coordinate][6] == player_color:
+                    return False
 
         if self._current_turn == current_player.get_name():
             if 0 <= row_coordinate <= 6:
@@ -86,7 +104,7 @@ class KubaGame:
         if is_valid:
             self._game_board.move_marble(current_player , row_coordinate , column_coordinate , direction)
             self.evaluate_win(current_player)
-            self.set_current_turn(other_player)
+            self.set_current_turn(other_player.get_name())
 
         return is_valid
 
@@ -140,11 +158,15 @@ class Board:
         self._marbles = Marbles()
 
     def set_columns(self):
+        self._columns = []
         for row in range(7):
             column = []
             for index in range(7):
                 column.append(self._current_game_board[row][index])
             self._columns.append(column)
+
+    def get_columns(self):
+        return self._columns
 
     def get_current_game_board(self):
         return self._current_game_board
@@ -279,23 +301,35 @@ class Marbles:
             self._white_marbles -= 1
 
 
-# def main():
-#     game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
-#     print(game.get_marble_count())  # returns (8,8,13)
-#     print(game.get_captured('PlayerA'))  # returns 0
-#     print(game.get_winner())  # returns None
-#     print(game.make_move('PlayerA' , (6 , 5) , 'F'))
-#     print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
-#     print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
-#     print(game.get_marble((5 , 5)))  # returns 'W'
-#
-#
-# if __name__ == "__main__":
-#     main()
-#
-#
-#
-# # ---------------------------------------- Tests ------------------------------------- #
+def main():
+    game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
+    print(game.get_marble_count())  # returns (8,8,13)
+    print(game.get_captured('PlayerA'))  # returns 0
+    print(game.get_winner())  # returns None
+    print(game.make_move('PlayerA' , (6 , 5) , 'F'))
+    print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
+    print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
+    print(game.get_marble((5 , 5)))  # returns 'W'
+    print(game.make_move('PlayerB' , (0 , 5) , 'B'))
+    print(game.make_move('PlayerA' , (5 , 5) , 'F'))
+    print(game.make_move('PlayerB' , (1 , 5) , 'B'))
+    print(game.make_move('PlayerA' , (4 , 5) , 'F'))
+    print(game.make_move('PlayerB' , (0 , 6) , 'B'))
+    print(game.make_move('PlayerA' , (3 , 5) , 'F'))
+    print(game.make_move('PlayerB' , (1 , 6) , 'B'))
+    print(game.make_move('PlayerA' , (2 , 5) , 'F'))
+    print(game.make_move('PlayerB' , (2 , 6) , 'B'))
+    print(game.make_move('PlayerA' , (1 , 5) , 'F'))
+    print(game.make_move('PlayerB' , (3 , 6) , 'B'))
+    print(game.get_captured("PlayerA"))
+
+
+if __name__ == "__main__":
+    main()
+
+
+
+# ---------------------------------------- Tests ------------------------------------- #
 # # FROM CANVAS:
 # game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
 # print(game.get_marble_count())  # returns (8,8,13)
@@ -305,7 +339,8 @@ class Marbles:
 # print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
 # print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
 # print(game.get_marble((5 , 5)))  # returns 'W'
-#
-# # CAROLINE'S TESTS:
-# # game = KubaGame(("Randy" , "W") , ("John" , "B"))
-# # print(game.get_marble((0 , 2)))
+
+
+# CAROLINE'S TESTS:
+# game = KubaGame(("Randy" , "W") , ("John" , "B"))
+# print(game.get_marble((0 , 2)))
