@@ -279,33 +279,33 @@ class Marbles:
             self._white_marbles -= 1
 
 
-def main():
-    game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
-    print(game.get_marble_count())  # returns (8,8,13)
-    print(game.get_captured('PlayerA'))  # returns 0
-    print(game.get_winner())  # returns None
-    print(game.make_move('PlayerA' , (6 , 5) , 'F'))
-    print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
-    print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
-    print(game.get_marble((5 , 5)))  # returns 'W'
-
-
-if __name__ == "__main__":
-    main()
-
-
-
-# ---------------------------------------- Tests ------------------------------------- #
-# FROM CANVAS:
-game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
-print(game.get_marble_count())  # returns (8,8,13)
-print(game.get_captured('PlayerA'))  # returns 0
-print(game.get_winner())  # returns None
-print(game.make_move('PlayerA' , (6 , 5) , 'F'))
-print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
-print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
-print(game.get_marble((5 , 5)))  # returns 'W'
-
-# CAROLINE'S TESTS:
-# game = KubaGame(("Randy" , "W") , ("John" , "B"))
-# print(game.get_marble((0 , 2)))
+# def main():
+#     game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
+#     print(game.get_marble_count())  # returns (8,8,13)
+#     print(game.get_captured('PlayerA'))  # returns 0
+#     print(game.get_winner())  # returns None
+#     print(game.make_move('PlayerA' , (6 , 5) , 'F'))
+#     print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
+#     print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
+#     print(game.get_marble((5 , 5)))  # returns 'W'
+#
+#
+# if __name__ == "__main__":
+#     main()
+#
+#
+#
+# # ---------------------------------------- Tests ------------------------------------- #
+# # FROM CANVAS:
+# game = KubaGame(('PlayerA' , 'W') , ('PlayerB' , 'B'))
+# print(game.get_marble_count())  # returns (8,8,13)
+# print(game.get_captured('PlayerA'))  # returns 0
+# print(game.get_winner())  # returns None
+# print(game.make_move('PlayerA' , (6 , 5) , 'F'))
+# print(game.get_current_turn())  # returns 'PlayerB' because PlayerA has just played.
+# print(game.make_move('PlayerA' , (6 , 5) , 'L'))  # Cannot make this move
+# print(game.get_marble((5 , 5)))  # returns 'W'
+#
+# # CAROLINE'S TESTS:
+# # game = KubaGame(("Randy" , "W") , ("John" , "B"))
+# # print(game.get_marble((0 , 2)))
