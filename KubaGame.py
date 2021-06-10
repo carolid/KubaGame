@@ -1,7 +1,7 @@
 # Author: Caroline Davis
 # Date: 06/08/2021
 # Description: This program generates a game of Kuba for 2 players. The program has multiple classes to handle
-#   various aspects of the game, including the Players, the Board, and the Marbles.
+#   various aspects of the game, including the Players, the Board, and the game itself.
 
 
 class KubaGame:
@@ -13,8 +13,10 @@ class KubaGame:
         self._player1 = Player(player1_tuple)
         self._player2 = Player(player2_tuple)
         self._player_list = [self._player1 , self._player2]
-        self._marbles_count = Marbles()
         self._game_board = Board()
+        self._white_marbles = 8
+        self._black_marbles = 8
+        self._red_marbles = 13
 
     def get_current_turn(self):
         """Function that returns the playername whose turn it is"""
@@ -40,7 +42,7 @@ class KubaGame:
 
     def get_marble_count(self):
         """Function that returns the total marbles count"""
-        return self._marbles_count.total_marbles()
+        return self._white_marbles, self._black_marbles, self._red_marbles
 
     def make_move(self , playername , coordinates , direction):
         """Function that a user can call to move a specified marble, in the directions: "L", "R",
@@ -126,12 +128,29 @@ class KubaGame:
                     is_valid = True
 
         if is_valid:
-            self._game_board.move_marble(current_player , row_coordinate , column_coordinate , direction)
+            captured = self._game_board.move_marble(current_player , row_coordinate ,
+                                                    column_coordinate , direction)
             self.evaluate_win(current_player)
             self.set_current_turn()
             self._game_board.reset_columns()
-
+            if captured != "X" and captured is not None:
+                if captured == "R":
+                    self.remove_marble("R")
+                elif captured == "B":
+                    self.remove_marble("B")
+                elif captured == "W":
+                    self.remove_marble("W")
+                current_player.add_capture(captured)
         return is_valid
+
+    def remove_marble(self , color):
+        """Function that removes a marble from the count, based on color"""
+        if color == "R":
+            self._red_marbles -= 1
+        elif color == "B":
+            self._black_marbles -= 1
+        elif color == "W":
+            self._white_marbles -= 1
 
     def evaluate_win(self , player):
         """Function called to evaluate the win status of the game"""
@@ -169,9 +188,11 @@ class Player:
 
     def add_capture(self , color):
         """Function that adds a capture to a Player object, based on color"""
-        if color == "B" or color == "W":
+        if color == "B":
             self._player_opposite_captures += 1
-        elif color == "R":
+        elif color == "W":
+            self._player_opposite_captures += 1
+        else:
             self._player_red_captures += 1
 
 
@@ -189,7 +210,6 @@ class Board:
                                     ]
         self._columns = []
         self._previous_game_board = self._current_game_board
-        self._marbles = Marbles()
 
     def set_columns(self):
         """Function that is called to set the initial columns on the board"""
@@ -221,14 +241,7 @@ class Board:
     def move_marble(self , player , row_coordinate , column_coordinate , direction):
         """Function that moves the specified marble on the board"""
         self._previous_game_board = self._current_game_board
-        color = player.get_color()
-        opposite_color = None
         captured = None
-
-        if color == "W":
-            opposite_color = "B"
-        elif color == "B":
-            opposite_color = "W"
 
         if direction == "L":
             start_column = column_coordinate
@@ -318,33 +331,4 @@ class Board:
 
             self._columns[column_coordinate][start_row] = "X"
 
-        if captured is not None and captured != "X":
-            if captured == "R":
-                self._marbles.remove_marble("R")
-            else:
-                self._marbles.remove_marble(opposite_color)
-            player.add_capture(captured)
-
-
-class Marbles:
-    """Class that creates a Marbles object"""
-    def __init__(self):
-        """Function that initializes a Marble object's data members"""
-        self._white_marbles = 8
-        self._black_marbles = 8
-        self._red_marbles = 13
-
-    def total_marbles(self):
-        """Function that returns the total marble count"""
-        marble_count = (self._white_marbles , self._black_marbles , self._red_marbles)
-        return marble_count
-
-    def remove_marble(self , color):
-        """Function that removes a marble from the count, based on color"""
-        if color == "R":
-            self._red_marbles -= 1
-        elif color == "B":
-            self._black_marbles -= 1
-        elif color == "W":
-            self._white_marbles -= 1
-
+        return captured
