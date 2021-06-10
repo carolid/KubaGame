@@ -4,9 +4,9 @@ class KubaGame:
         self._winner = None
         self._player1 = Player(player1_tuple)
         self._player2 = Player(player2_tuple)
+        self._player_list = [self._player1 , self._player2]
         self._marbles_count = Marbles()
         self._game_board = Board()
-        self._player_list = [self._player1 , self._player2]
 
     def get_current_turn(self):
         return self._current_turn
@@ -29,37 +29,30 @@ class KubaGame:
         return self._marbles_count.total_marbles()
 
     def make_move(self , playername , coordinates , direction):
-        self._game_board.set_columns()
+        if self._current_turn is None:
+            current_player = self.initialize_game(playername)
+
         row_coordinate = coordinates[0]
         column_coordinate = coordinates[1]
         current_board = self._game_board.get_current_game_board()
-        columns = self._game_board.get_columns()
         current_player = None
-        other_player = None
-
-        for player in self._player_list:
-            if playername == player.get_name():
-                current_player = player
-            other_player = player
-        if self._current_turn is None:
-            self._current_turn = current_player.get_name()
-
         player_color = current_player.get_color()
+        columns = self._game_board.get_columns()
 
-        if "X" not in current_board[row_coordinate]:
-            if direction == "L":
-                if current_board[row_coordinate][0] == player_color:
-                    return False
-            elif direction == "R":
-                if current_board[row_coordinate][6] == player_color:
-                    return False
-        elif "X" not in columns[column_coordinate]:
-            if direction == "F":
-                if columns[column_coordinate][0] == player_color:
-                    return False
-            elif direction == "B":
-                if columns[column_coordinate][6] == player_color:
-                    return False
+        if "X" in current_board[row_coordinate]:
+            if "X" in columns[column_coordinate]:
+                if direction == "L":
+                    if current_board[row_coordinate][0] == player_color:
+                        return False
+                elif direction == "R":
+                    if current_board[row_coordinate][6] == player_color:
+                        return False
+                elif direction == "F":
+                    if columns[column_coordinate][0] == player_color:
+                        return False
+                elif direction == "B":
+                    if columns[column_coordinate][6] == player_color:
+                        return False
 
         if self._current_turn == current_player.get_name():
             if 0 <= row_coordinate <= 6:
@@ -67,17 +60,31 @@ class KubaGame:
                     if current_player.get_color() == current_board[row_coordinate][column_coordinate]:
                         if self._winner is None:
                             return self.is_valid_move(current_player , row_coordinate ,
-                                                      column_coordinate , direction, other_player)
+                                                      column_coordinate , direction)
                         return False
                     return False
                 return False
             return False
         return False
 
-    def set_current_turn(self, playername):
-        self._current_turn = playername
+    def initialize_game(self, playername):
+        if playername == self._player1.get_name():
+            current_player = self._player1
+        else:
+            current_player = self._player2
 
-    def is_valid_move(self , current_player , row_coordinate , column_coordinate , direction, other_player):
+        self._game_board.set_columns()
+        self._current_turn = current_player.get_name()
+
+        return current_player
+
+    def set_current_turn(self):
+        if self._current_turn == self._player1.get_name():
+            self._current_turn = self._player2.get_name()
+        else:
+            self._current_turn = self._player1.get_name()
+
+    def is_valid_move(self , current_player , row_coordinate , column_coordinate , direction):
         is_valid = False
         current_board = self._game_board.get_current_game_board()
 
@@ -104,7 +111,7 @@ class KubaGame:
         if is_valid:
             self._game_board.move_marble(current_player , row_coordinate , column_coordinate , direction)
             self.evaluate_win(current_player)
-            self.set_current_turn(other_player.get_name())
+            self.set_current_turn()
 
         return is_valid
 
@@ -165,6 +172,11 @@ class Board:
                 column.append(self._current_game_board[row][index])
             self._columns.append(column)
 
+    def reset_columns(self):
+        for row in range(7):
+            for column in range(7):
+                self._current_game_board[row][column] = self._columns[column][row]
+
     def get_columns(self):
         return self._columns
 
@@ -187,7 +199,6 @@ class Board:
 
         if direction == "L":
             start_column = column_coordinate
-            next_column = column_coordinate - 1
             count = start_column
 
             while column_coordinate != 0 and self._current_game_board[row_coordinate][column_coordinate] != "X":
